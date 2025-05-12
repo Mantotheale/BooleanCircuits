@@ -7,11 +7,11 @@ import thesis.circuit.XorCircuit;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShiftAdderLower extends Circuit {
+public class ShiftAdder extends Circuit {
     private final int n;
     private final @NotNull List<@NotNull Circuit> circuits;
 
-    public ShiftAdderLower(int bits) {
+    public ShiftAdder(int bits) {
         super(bits - 1, 2 * bits - 1);
         this.n = bits / 2;
 

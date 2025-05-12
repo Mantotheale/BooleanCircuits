@@ -57,15 +57,21 @@ public class KaratsubaMultiplier extends Circuit {
             }
 
             // Generate (1 + t^n)a0b0 circuit
-            Circuit onePlusTna0b0 = new ShiftAdderLower(bits);
+            Circuit onePlusTna0b0 = new ShiftAdder(bits);
             for (int i = 0; i < 2 * n - 1; i++) {
                 onePlusTna0b0.setInput(i, new OutputWire(a0b0, i));
             }
 
-            // Generate (t^n + t^2n)a1b1 circuit
-            Circuit tnPlusT2na1b1 = new ShiftAdderUpper(bits);
+            // Generate (1 + t^n)a1b1 circuit
+            Circuit onePlusTna1b1 = new ShiftAdder(bits);
             for (int i = 0; i < 2 * n - 1; i++) {
-                tnPlusT2na1b1.setInput(i, new OutputWire(a1b1, i));
+                onePlusTna1b1.setInput(i, new OutputWire(a1b1, i));
+            }
+
+            // Generate (t^n + t^2n)a1b1 circuit
+            Circuit tnPlusT2na1b1 = new Shifter(bits);
+            for (int i = 0; i < 2 * bits - 1; i++) {
+                tnPlusT2na1b1.setInput(i, new OutputWire(onePlusTna1b1, i));
             }
 
             // Generate t^n(a0 + a1)(b0 + b1)

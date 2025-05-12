@@ -7,17 +7,13 @@ public class Shifter extends Circuit {
     private final int n;
 
     public Shifter(int bits) {
-        super(bits - 1, 2 * bits - 1);
+        super(2 * bits - 1, 2 * bits - 1);
         this.n = bits / 2;
     }
 
     @Override
     public @NotNull Boolean evaluateSlot(int outputSlot) {
         if (outputSlot < n) {
-            return Boolean.FALSE;
-        }
-
-        if (outputSlot >= 3 * n - 1) {
             return Boolean.FALSE;
         }
 
