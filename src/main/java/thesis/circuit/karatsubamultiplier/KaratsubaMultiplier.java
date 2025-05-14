@@ -4,10 +4,17 @@ import org.jetbrains.annotations.NotNull;
 import thesis.circuit.AndCircuit;
 import thesis.circuit.Circuit;
 
+import thesis.circuit.IdentityCircuit;
+import thesis.wire.CompositeWire;
 import thesis.wire.OutputWire;
+import thesis.wire.Wire;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 
 public class KaratsubaMultiplier extends Circuit {
-    private final @NotNull Circuit circuit;
+    private final @NotNull List<@NotNull Circuit> circuits;
 
     public KaratsubaMultiplier(int bits) {
         super(2 * bits, 2 * bits - 1);
@@ -15,95 +22,91 @@ public class KaratsubaMultiplier extends Circuit {
         if (bits <= 0) {
             throw new IllegalArgumentException("A multiplier can only operate on a number of bits > 0");
         } else if (bits == 1) {
-            circuit = new AndCircuit();
-            circuit.setInput(0, inputPins.get(0));
-            circuit.setInput(1, inputPins.get(1));
+            circuits = new ArrayList<>();
+
+            Circuit and = new AndCircuit();
+            and.setInput(0, inputPins.get(0));
+            and.setInput(1, inputPins.get(1));
+
+            circuits.add(and);
         } else {
             int n = bits / 2;
             // A(x) = a0 + a1x^n
             // B(x) = b0 + b1x^n
             // A(x)B(x) = (1 + x^n)a0b0 + t^n(a0 + a1)(b0 + b1) + (t^n + t^2n)a1b1
 
+            CompositeWire a0 = getWires(0, n);
+            CompositeWire a1 = getWires(n, n);
+            CompositeWire b0 = getWires(bits, n);
+            CompositeWire b1 = getWires(bits + n, n);
+
             // Generate a0b0 circuit
-            Circuit a0b0 = new KaratsubaMultiplier(n);
-            for (int i = 0; i < n; i++) {
-                a0b0.setInput(i, inputPins.get(i));
-                a0b0.setInput(n + i, inputPins.get(bits + i));
-
-                //a0b0.setInput(i, new NamedWire(inputPins.get(i), "a[" + i + "]"));
-                //a0b0.setInput(n + i, new NamedWire(inputPins.get(bits + i), "b[" + i + "]"));
-            }
-
+            Circuit a0b0 = new KaratsubaMultiplier(n, a0, b0);
             // Generate a1b1 circuit
-            Circuit a1b1 = new KaratsubaMultiplier(n);
-            for (int i = 0; i < n; i++) {
-                a1b1.setInput(i, inputPins.get(n + i));
-                a1b1.setInput(n + i, inputPins.get(bits + n + i));
-            }
-
+            Circuit a1b1 = new KaratsubaMultiplier(n, a1, b1);
             // Generate a0 + a1 circuit
-            Circuit a0Plusa1 = new NormalAdder(bits);
-            for (int i = 0; i < bits; i++) {
-                a0Plusa1.setInput(i, inputPins.get(i));
-            }
-
+            Circuit a0Plusa1 = new NormalAdder(n, a0, a1);
             // Generate b0 + b1 circuit
-            Circuit b0Plusb1 = new NormalAdder(bits);
-            for (int i = 0; i < bits; i++) {
-                b0Plusb1.setInput(i, inputPins.get(bits + i));
-            }
-
+            Circuit b0Plusb1 = new NormalAdder(n, b0, b1);
             // Generate (a0 + a1)(b0 + b1) circuit
-            Circuit a0Plusa1b0Plusb1 = new KaratsubaMultiplier(n);
-            for (int i = 0; i < n; i++) {
-                a0Plusa1b0Plusb1.setInput(i, new OutputWire(a0Plusa1, i));
-                a0Plusa1b0Plusb1.setInput(n + i, new OutputWire(b0Plusb1, i));
-            }
-
+            Circuit a0Plusa1b0Plusb1 = new KaratsubaMultiplier(n,
+                    new CompositeWire(a0Plusa1, 0, n),
+                    new CompositeWire(b0Plusb1, 0, n)
+            );
             // Generate (1 + t^n)a0b0 circuit
-            Circuit onePlusTna0b0 = new ShiftAdder(bits);
-            for (int i = 0; i < 2 * n - 1; i++) {
-                onePlusTna0b0.setInput(i, new OutputWire(a0b0, i));
-            }
-
+            Circuit onePlusTna0b0 = new ShiftAdder(2 * n - 1, n, new CompositeWire(a0b0, 0, 2 * n - 1));
             // Generate (1 + t^n)a1b1 circuit
-            Circuit onePlusTna1b1 = new ShiftAdder(bits);
+            Circuit onePlusTna1b1 = new ShiftAdder(2 * n - 1, n, new CompositeWire(a1b1, 0, 2 * n - 1));
+            // Generate middle part of (1 + t^n)a0b0 + t^n(a0 + a1)(b0 + b1) circuit
+            Circuit firstAddMiddlePart = new NormalAdder(2 * n - 1,
+                    new CompositeWire(onePlusTna0b0, n, 2 * n - 1),
+                    new CompositeWire(a0Plusa1b0Plusb1, 0, 2 * n - 1)
+            );
+
+            // Generate middle part of (1 + t^n)a0b0 + t^n(a0 + a1)(b0 + b1) + (t^n + t^2n)a1b1 circuit
+            Circuit secondAddMiddlePart = new NormalAdder(2 * n - 1,
+                    new CompositeWire(firstAddMiddlePart, 0, 2 * n - 1),
+                    new CompositeWire(onePlusTna1b1, 0, 2 * n - 1));
+
+            circuits = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, new OutputWire(onePlusTna0b0, i));
+                circuits.add(id);
+            }
             for (int i = 0; i < 2 * n - 1; i++) {
-                onePlusTna1b1.setInput(i, new OutputWire(a1b1, i));
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, new OutputWire(secondAddMiddlePart, i));
+                circuits.add(id);
             }
-
-            // Generate (t^n + t^2n)a1b1 circuit
-            Circuit tnPlusT2na1b1 = new Shifter(bits);
-            for (int i = 0; i < 2 * bits - 1; i++) {
-                tnPlusT2na1b1.setInput(i, new OutputWire(onePlusTna1b1, i));
+            for (int i = 0; i < n; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, new OutputWire(onePlusTna1b1, i + 2 * n - 1));
+                circuits.add(id);
             }
+        }
+    }
 
-            // Generate t^n(a0 + a1)(b0 + b1)
-            Circuit tna0Plusa1b0Plusb1 = new Shifter(bits);
-            for (int i = 0; i < 2 * n - 1; i++) {
-                tna0Plusa1b0Plusb1.setInput(i, new OutputWire(a0Plusa1b0Plusb1, i));
-            }
+    public KaratsubaMultiplier(int bits, @NotNull CompositeWire a, @NotNull CompositeWire b) {
+        this(bits);
 
-            // Generate (1 + t^n)a0b0 + t^n(a0 + a1)(b0 + b1) circuit
-            Circuit firstAdd = new FinalAdder(bits);
-            for (int i = 0; i < 2 * bits - 1; i++) {
-                firstAdd.setInput(i, new OutputWire(onePlusTna0b0, i));
-                firstAdd.setInput(2 * bits - 1 + i, new OutputWire(tna0Plusa1b0Plusb1, i));
-            }
+        for (int i = 0; i < a.len(); i++) {
+            setInput(i, a.getWire(i));
+        }
 
-            // Generate (1 + t^n)a0b0 + t^n(a0 + a1)(b0 + b1) + (t^n + t^2n)a1b1 circuit
-            Circuit secondAdd = new FinalAdder(bits);
-            for (int i = 0; i < 2 * bits - 1; i++) {
-                secondAdd.setInput(i, new OutputWire(firstAdd, i));
-                secondAdd.setInput(2 * bits - 1 + i, new OutputWire(tnPlusT2na1b1, i));
-            }
-
-            circuit = secondAdd;
+        for (int i = 0; i < b.len(); i++) {
+            setInput(bits + i, b.getWire(i));
         }
     }
 
     @Override
     public @NotNull Boolean evaluateSlot(int outputSlot) {
-        return circuit.evaluate(outputSlot);
+        return circuits.get(outputSlot).evaluate(0);
+    }
+
+    private @NotNull CompositeWire getWires(int offset, int count) {
+        return new CompositeWire(
+                IntStream.range(offset, offset + count).mapToObj(i -> (Wire) inputPins.get(i)).toList()
+        );
     }
 }

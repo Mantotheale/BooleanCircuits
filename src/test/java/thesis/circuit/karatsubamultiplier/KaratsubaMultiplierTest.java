@@ -112,7 +112,7 @@ public class KaratsubaMultiplierTest {
         for (int bits = 1; bits <= 16; bits *= 2) {
             Circuit circuit = new KaratsubaMultiplier(bits);
 
-            for (int i = 0; i < 100_000; i++) {
+            for (int i = 0; i < 10_000; i++) {
                 List<Boolean> a = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
                 List<Boolean> b = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
 

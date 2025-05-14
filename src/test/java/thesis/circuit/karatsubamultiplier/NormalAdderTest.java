@@ -24,8 +24,8 @@ public class NormalAdderTest {
     }
 
     @Test
-    public void twoBitAddTest() {
-        Circuit circuit = new NormalAdder(2);
+    public void oneBitAddTest() {
+        Circuit circuit = new NormalAdder(1);
 
         setUpInput(circuit, List.of(Wire.ZERO), List.of(Wire.ZERO));
         checkEvaluation(circuit, List.of(Boolean.FALSE));
@@ -41,8 +41,8 @@ public class NormalAdderTest {
     }
 
     @Test
-    public void fourBitAddTest() {
-        Circuit circuit = new NormalAdder(4);
+    public void twoBitAddTest() {
+        Circuit circuit = new NormalAdder(2);
 
         setUpInput(circuit, List.of(Wire.ZERO, Wire.ONE), List.of(Wire.ZERO, Wire.ONE));
         checkEvaluation(circuit, List.of(Boolean.FALSE, Boolean.FALSE));

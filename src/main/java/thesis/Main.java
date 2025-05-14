@@ -6,12 +6,10 @@ import thesis.circuit.Circuit;
 import thesis.circuit.IdentityCircuit;
 import thesis.circuit.XorCircuit;
 import thesis.circuit.karatsubamultiplier.KaratsubaMultiplier;
-import thesis.poly.Polynomial;
+import thesis.circuit.karatsubamultiplier.ShiftAdder;
 import thesis.wire.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,12 +18,28 @@ public class Main {
         //xorTest();
         //realKaratsubaTest();
         //fourBitsTest();
+
+        Circuit circuit = new ShiftAdder(3, 4);
+
+        setUpInput(circuit, List.of(Wire.ZERO, Wire.ONE, Wire.ONE));
+        List<Boolean> exp = List.of(Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE);
+        for (int i = 0; i < exp.size(); i++) {
+            System.out.println("Exp: " + exp.get(i) + ", Actual: " + circuit.evaluate(i));
+        }
+
+        setUpInput(circuit, List.of(Wire.ONE, Wire.ZERO, Wire.ZERO));
+        exp = List.of(Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+        for (int i = 0; i < exp.size(); i++) {
+            System.out.println("Exp: " + exp.get(i) + ", Actual: " + circuit.evaluate(i));
+        }
+
+        /*
         KaratsubaMultiplier mul = new KaratsubaMultiplier(4);
         setUpInput(mul,
                 List.of(Wire.ONE, Wire.ZERO, Wire.ONE, Wire.ZERO),
                 List.of(Wire.ONE, Wire.ONE, Wire.ONE, Wire.ONE)
         );
-        System.out.println(Arrays.toString(new CompositeWire(mul, 7, 0).evaluate().toArray()));
+        System.out.println(Arrays.toString(new CompositeWire(mul, 0, 7).evaluate().toArray()));
 
         System.out.println("POLY MUL");
         Circuit circuit = new KaratsubaMultiplier(8);
@@ -59,7 +73,7 @@ public class Main {
             }
 
             System.out.println("OKAY: " + okay + ", BAD: " + bad);
-        }
+        }*/
         /*Circuit x = new KaratsubaMultiplier(2);
 
         Circuit adder = new NormalAdder(3);
@@ -100,6 +114,10 @@ public class Main {
         System.out.println(out0.evaluate());
         System.out.println(out1.evaluate());
         System.out.println(out2.evaluate());*/
+    }
+
+    private static void setUpInput(@NotNull Circuit circuit, @NotNull List<@NotNull Wire> input) {
+        new CompositeWire(input).wireToCircuit(circuit, 0);
     }
 
     private static void setUpInput(@NotNull Circuit circuit, @NotNull List<@NotNull Wire> a, @NotNull List<@NotNull Wire> b) {

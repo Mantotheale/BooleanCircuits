@@ -3,9 +3,7 @@ package thesis.wire;
 import org.jetbrains.annotations.NotNull;
 import thesis.circuit.Circuit;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class CompositeWire {
     private final @NotNull List<@NotNull Wire> wires;
@@ -17,7 +15,7 @@ public class CompositeWire {
         }
     }
 
-    public CompositeWire(@NotNull Circuit circuit, int bits, int offset) {
+    public CompositeWire(@NotNull Circuit circuit, int offset, int bits) {
         this.wires = new ArrayList<>();
         for (int i = 0; i < bits; i++) {
             this.wires.add(new OutputWire(circuit, offset + i));
@@ -32,5 +30,13 @@ public class CompositeWire {
 
     public @NotNull List<@NotNull Boolean> evaluate() {
         return wires.stream().map(Wire::evaluate).toList();
+    }
+
+    public @NotNull Wire getWire(int i) {
+        return wires.get(i);
+    }
+
+    public int len() {
+        return wires.size();
     }
 }

@@ -2,42 +2,71 @@ package thesis.circuit.karatsubamultiplier;
 
 import org.jetbrains.annotations.NotNull;
 import thesis.circuit.Circuit;
+import thesis.circuit.IdentityCircuit;
 import thesis.circuit.XorCircuit;
+import thesis.wire.CompositeWire;
+import thesis.wire.Wire;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ShiftAdder extends Circuit {
-    private final int n;
     private final @NotNull List<@NotNull Circuit> circuits;
 
-    public ShiftAdder(int bits) {
-        super(bits - 1, 2 * bits - 1);
-        this.n = bits / 2;
+    public ShiftAdder(int bits, int shift) {
+        super(bits, bits + shift);
 
         circuits = new ArrayList<>();
-        for (int i = 0; i < n - 1; i++) {
-            Circuit xor = new XorCircuit();
-            xor.setInput(0, inputPins.get(n + i));
-            xor.setInput(1, inputPins.get(i));
-            circuits.add(xor);
+        if (shift > bits) {
+            for (int i = 0; i < bits; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, inputPins.get(i));
+                circuits.add(id);
+            }
+
+            for (int i = bits; i < shift; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, Wire.ZERO);
+                circuits.add(id);
+            }
+
+            for (int i = shift; i < bits + shift; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, inputPins.get(i - shift));
+                circuits.add(id);
+            }
+        } else {
+            for (int i = 0; i < shift; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, inputPins.get(i));
+                circuits.add(id);
+            }
+
+            for (int i = 0; i < bits - shift; i++) {
+                Circuit xor = new XorCircuit();
+                xor.setInput(0, inputPins.get(i));
+                xor.setInput(1, inputPins.get(shift + i));
+                circuits.add(xor);
+            }
+
+            for (int i = bits; i < bits + shift; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, inputPins.get(i - shift));
+                circuits.add(id);
+            }
+        }
+    }
+
+    public ShiftAdder(int bits, int shift, @NotNull CompositeWire wire) {
+        this(bits, shift);
+
+        for (int i = 0; i < wire.len(); i++) {
+            setInput(i, wire.getWire(i));
         }
     }
 
     @Override
     public @NotNull Boolean evaluateSlot(int outputSlot) {
-        if (outputSlot >= 3 * n - 1) {
-            return Boolean.FALSE;
-        }
-
-        if (outputSlot < n) {
-            return inputPins.get(outputSlot).evaluate();
-        }
-
-        if (outputSlot >= 2 * n - 1) {
-            return inputPins.get(outputSlot - n).evaluate();
-        }
-
-        return circuits.get(outputSlot - n).evaluate(0);
+        return circuits.get(outputSlot).evaluate(0);
     }
 }
