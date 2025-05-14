@@ -12,6 +12,7 @@ import thesis.wire.CompositeWire;
 import thesis.wire.Wire;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.IntStream;
 
 public class KaratsubaMultiplierTest {
@@ -106,20 +107,21 @@ public class KaratsubaMultiplierTest {
 
     @Test
     public void twoPowerBitMulTest() {
+        Random r = new Random();
+
         for (int bits = 1; bits <= 16; bits *= 2) {
             Circuit circuit = new KaratsubaMultiplier(bits);
 
-            for (int i = 0; i < Math.pow(2, bits); i++) {
-                for (int j = 0; j < Math.pow(2, bits); j++) {
-                    List<Boolean> a = padList(IntToBinaryList.convert(i), bits);
-                    List<Boolean> b = padList(IntToBinaryList.convert(j), bits);
+            for (int i = 0; i < 100_000; i++) {
+                List<Boolean> a = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
+                List<Boolean> b = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
 
-                    circuit.resetInput();
-                    setUpInputBools(circuit, a, b);
-                    List<Boolean> res = IntStream.range(0, 2 * bits - 1).mapToObj(circuit::evaluate).toList();
+                circuit.resetInput();
+                setUpInputBools(circuit, a, b);
+                List<Boolean> res = IntStream.range(0, 2 * bits - 1).mapToObj(circuit::evaluate).toList();
 
-                    Assertions.assertEquals(new Polynomial(a).mul(new Polynomial(b)), new Polynomial(res));
-                }
+                Assertions.assertEquals(new Polynomial(a).mul(new Polynomial(b)), new Polynomial(res));
+
             }
         }
     }
