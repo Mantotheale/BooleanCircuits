@@ -29,4 +29,8 @@ public class CompositeWire {
             circuit.setInput(offset + i, wires.get(i));
         }
     }
+
+    public @NotNull List<@NotNull Boolean> evaluate() {
+        return wires.stream().map(Wire::evaluate).toList();
+    }
 }

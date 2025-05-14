@@ -28,6 +28,9 @@ public class KaratsubaMultiplier extends Circuit {
             for (int i = 0; i < n; i++) {
                 a0b0.setInput(i, inputPins.get(i));
                 a0b0.setInput(n + i, inputPins.get(bits + i));
+
+                //a0b0.setInput(i, new NamedWire(inputPins.get(i), "a[" + i + "]"));
+                //a0b0.setInput(n + i, new NamedWire(inputPins.get(bits + i), "b[" + i + "]"));
             }
 
             // Generate a1b1 circuit
@@ -38,13 +41,13 @@ public class KaratsubaMultiplier extends Circuit {
             }
 
             // Generate a0 + a1 circuit
-            Circuit a0Plusa1 = new NormalAdder(n);
+            Circuit a0Plusa1 = new NormalAdder(bits);
             for (int i = 0; i < bits; i++) {
                 a0Plusa1.setInput(i, inputPins.get(i));
             }
 
             // Generate b0 + b1 circuit
-            Circuit b0Plusb1 = new NormalAdder(n);
+            Circuit b0Plusb1 = new NormalAdder(bits);
             for (int i = 0; i < bits; i++) {
                 b0Plusb1.setInput(i, inputPins.get(bits + i));
             }

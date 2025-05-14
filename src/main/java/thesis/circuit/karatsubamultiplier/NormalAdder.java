@@ -11,17 +11,17 @@ public class NormalAdder extends Circuit {
     private final @NotNull List<@NotNull Circuit> circuits;
 
     public NormalAdder(int bits) {
-        super(2 * bits, bits);
+        super(bits, bits);
 
         if (bits <= 0) {
             throw new IllegalArgumentException("An adder can only operate on a number of bits > 0");
         }
 
         circuits = new ArrayList<>();
-        for (int i = 0; i < bits; i++) {
+        for (int i = 0; i < bits / 2; i++) {
             Circuit xor = new XorCircuit();
             xor.setInput(0, inputPins.get(i));
-            xor.setInput(1, inputPins.get(bits + i));
+            xor.setInput(1, inputPins.get(bits / 2 + i));
             circuits.add(xor);
         }
     }

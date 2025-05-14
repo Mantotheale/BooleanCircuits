@@ -25,7 +25,7 @@ public class ShiftAdderTest {
     }
 
     @Test
-    public void shifterNBitsHasNMinus1BitInputs() {
+    public void shiftAdderNBitsHasNMinus1BitInputs() {
         Assertions.assertThrows(InvalidInputSlotException.class, () -> new ShiftAdder(4).setInput(3, Wire.ZERO));
         Assertions.assertThrows(InvalidInputSlotException.class, () -> new ShiftAdder(8).setInput(15, Wire.ZERO));
     }
@@ -42,7 +42,7 @@ public class ShiftAdderTest {
     }
 
     @Test
-    public void fourShifterTest() {
+    public void fourBitShiftAdderTest() {
         Circuit circuit = new ShiftAdder(4);
 
         setUpInput(circuit, List.of(Wire.ZERO, Wire.ONE, Wire.ONE));

@@ -1,5 +1,6 @@
 package thesis;
 
+import org.jetbrains.annotations.NotNull;
 import thesis.circuit.AndCircuit;
 import thesis.circuit.Circuit;
 import thesis.circuit.IdentityCircuit;
@@ -7,15 +8,23 @@ import thesis.circuit.XorCircuit;
 import thesis.circuit.karatsubamultiplier.KaratsubaMultiplier;
 import thesis.wire.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        identityTest();
-        andTest();
-        xorTest();
-        realKaratsubaTest();
-        fourBitsTest();
+        //identityTest();
+        //andTest();
+        //xorTest();
+        //realKaratsubaTest();
+        //fourBitsTest();
+        KaratsubaMultiplier mul = new KaratsubaMultiplier(4);
+        setUpInput(mul,
+                List.of(Wire.ONE, Wire.ZERO, Wire.ONE, Wire.ZERO),
+                List.of(Wire.ONE, Wire.ONE, Wire.ONE, Wire.ONE)
+        );
+        System.out.println(Arrays.toString(new CompositeWire(mul, 7, 0).evaluate().toArray()));
+
         /*Circuit x = new KaratsubaMultiplier(2);
 
         Circuit adder = new NormalAdder(3);
@@ -56,6 +65,11 @@ public class Main {
         System.out.println(out0.evaluate());
         System.out.println(out1.evaluate());
         System.out.println(out2.evaluate());*/
+    }
+
+    private static void setUpInput(@NotNull Circuit circuit, @NotNull List<@NotNull Wire> a, @NotNull List<@NotNull Wire> b) {
+        new CompositeWire(a).wireToCircuit(circuit, 0);
+        new CompositeWire(b).wireToCircuit(circuit, a.size());
     }
 
     public static void identityTest() {
