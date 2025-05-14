@@ -6,10 +6,12 @@ import thesis.circuit.Circuit;
 import thesis.circuit.IdentityCircuit;
 import thesis.circuit.XorCircuit;
 import thesis.circuit.karatsubamultiplier.KaratsubaMultiplier;
+import thesis.poly.Polynomial;
 import thesis.wire.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
@@ -25,6 +27,39 @@ public class Main {
         );
         System.out.println(Arrays.toString(new CompositeWire(mul, 7, 0).evaluate().toArray()));
 
+        System.out.println("POLY MUL");
+        Circuit circuit = new KaratsubaMultiplier(8);
+
+        int okay = 0;
+        int bad = 0;
+        for (int i = 0; i < Math.pow(2, 8); i++) {
+            for (int j = 0; j < Math.pow(2, 8); j++) {
+                List<Boolean> a = padList(IntToBinaryList.convert(i), 8);
+                List<Boolean> b = padList(IntToBinaryList.convert(j), 8);
+
+                circuit.resetInput();
+                setUpInputBools(circuit, a, b);
+                List<Boolean> res = IntStream.range(0, 15).mapToObj(circuit::evaluate).toList();
+
+                Polynomial polyA = new Polynomial(a);
+                Polynomial polyB = new Polynomial(b);
+                System.out.println("a: " + polyA);
+                System.out.println("b: " + polyB);
+
+                Polynomial polyProd = polyA.mul(polyB);
+                Polynomial circProd = new Polynomial(res);
+                System.out.println("Expected: " + polyProd);
+                System.out.println("Actual: " + circProd);
+
+                if (!polyProd.equals(circProd)) {
+                    bad++;
+                } else {
+                    okay++;
+                }
+            }
+
+            System.out.println("OKAY: " + okay + ", BAD: " + bad);
+        }
         /*Circuit x = new KaratsubaMultiplier(2);
 
         Circuit adder = new NormalAdder(3);
@@ -70,6 +105,19 @@ public class Main {
     private static void setUpInput(@NotNull Circuit circuit, @NotNull List<@NotNull Wire> a, @NotNull List<@NotNull Wire> b) {
         new CompositeWire(a).wireToCircuit(circuit, 0);
         new CompositeWire(b).wireToCircuit(circuit, a.size());
+    }
+
+    private static void setUpInputBools(@NotNull Circuit circuit, @NotNull List<@NotNull Boolean> a, @NotNull List<@NotNull Boolean> b) {
+        new CompositeWire(a.stream().map(x -> x ? Wire.ONE : Wire.ZERO).toList()).wireToCircuit(circuit, 0);
+        new CompositeWire(b.stream().map(x -> x ? Wire.ONE : Wire.ZERO).toList()).wireToCircuit(circuit, a.size());
+    }
+
+    private static @NotNull List<@NotNull Boolean> padList(@NotNull List<@NotNull Boolean> l, int len) {
+        for (int i = l.size(); i < len; i++) {
+            l.add(Boolean.FALSE);
+        }
+
+        return l;
     }
 
     public static void identityTest() {

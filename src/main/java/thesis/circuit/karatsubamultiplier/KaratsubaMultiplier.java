@@ -3,6 +3,7 @@ package thesis.circuit.karatsubamultiplier;
 import org.jetbrains.annotations.NotNull;
 import thesis.circuit.AndCircuit;
 import thesis.circuit.Circuit;
+
 import thesis.wire.OutputWire;
 
 public class KaratsubaMultiplier extends Circuit {

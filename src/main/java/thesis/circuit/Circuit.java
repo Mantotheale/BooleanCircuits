@@ -40,6 +40,10 @@ public abstract class Circuit {
         inputPins.get(inputSlot).setWire(input);
     }
 
+    public final void resetInput() {
+        inputPins.forEach(p -> p.setWire(Wire.ZERO));
+    }
+
     public final @NotNull Boolean evaluate(int outputSlot) {
         if (outputSlot < 0 || outputSlot >= outputSlots())
             throw new InvalidOutputSlotException(this, outputSlot);
