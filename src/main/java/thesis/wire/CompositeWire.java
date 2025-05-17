@@ -22,6 +22,13 @@ public class CompositeWire {
         }
     }
 
+    public CompositeWire(@NotNull Circuit circuit) {
+        this.wires = new ArrayList<>();
+        for (int i = 0; i < circuit.outputSlots(); i++) {
+            this.wires.add(new OutputWire(circuit, i));
+        }
+    }
+
     public void wireToCircuit(@NotNull Circuit circuit, int offset) {
         for (int i = 0; i < wires.size(); i++) {
             circuit.setInput(offset + i, wires.get(i));
@@ -38,5 +45,10 @@ public class CompositeWire {
 
     public int len() {
         return wires.size();
+    }
+
+    @Override
+    public String toString() {
+        return wires.stream().map(Wire::evaluate).toList().toString();
     }
 }
