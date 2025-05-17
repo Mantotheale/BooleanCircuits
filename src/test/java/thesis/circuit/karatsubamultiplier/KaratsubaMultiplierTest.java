@@ -126,6 +126,38 @@ public class KaratsubaMultiplierTest {
         }
     }
 
+    @Test
+    public void threeBitMulTest() {
+        Circuit circuit = new KaratsubaMultiplier(3);
+
+        List<Boolean> a = List.of(true, false, true);
+        List<Boolean> b = List.of(false, true, true);
+        setUpInputBools(circuit, a, b);
+        List<Boolean> res = IntStream.range(0, 5).mapToObj(circuit::evaluate).toList();
+        Assertions.assertEquals(new Polynomial(a).mul(new Polynomial(b)), new Polynomial(res));
+    }
+
+    @Test
+    public void oddBitMulTest() {
+        Random r = new Random();
+
+        for (int bits = 5; bits <= 15; bits += 2) {
+            Circuit circuit = new KaratsubaMultiplier(bits);
+
+            for (int i = 0; i < 10_000; i++) {
+                List<Boolean> a = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
+                List<Boolean> b = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
+
+                circuit.resetInput();
+                setUpInputBools(circuit, a, b);
+                List<Boolean> res = IntStream.range(0, 2 * bits - 1).mapToObj(circuit::evaluate).toList();
+
+                Assertions.assertEquals(new Polynomial(a).mul(new Polynomial(b)), new Polynomial(res));
+
+            }
+        }
+    }
+
     private static void setUpInput(@NotNull Circuit circuit, @NotNull List<@NotNull Wire> a, @NotNull List<@NotNull Wire> b) {
         new CompositeWire(a).wireToCircuit(circuit, 0);
         new CompositeWire(b).wireToCircuit(circuit, a.size());

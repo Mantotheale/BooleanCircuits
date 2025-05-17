@@ -29,6 +29,20 @@ public class KaratsubaMultiplier extends Circuit {
             and.setInput(1, inputPins.get(1));
 
             circuits.add(and);
+        } else if (bits % 2 != 0) {
+            circuits = new ArrayList<>();
+
+            Circuit c = new KaratsubaMultiplier(bits + 1);
+            for (int i = 0; i < bits; i++) {
+                c.setInput(i, inputPins.get(i));
+                c.setInput(bits + 1 + i, inputPins.get(bits + i));
+            }
+
+            for (int i = 0; i < 2 * bits - 1; i++) {
+                Circuit id = new IdentityCircuit(1);
+                id.setInput(0, new OutputWire(c, i));
+                circuits.add(id);
+            }
         } else {
             int n = bits / 2;
             // A(x) = a0 + a1x^n
@@ -50,22 +64,22 @@ public class KaratsubaMultiplier extends Circuit {
             Circuit b0Plusb1 = new NormalAdder(n, b0, b1);
             // Generate (a0 + a1)(b0 + b1) circuit
             Circuit a0Plusa1b0Plusb1 = new KaratsubaMultiplier(n,
-                    new CompositeWire(a0Plusa1, 0, n),
-                    new CompositeWire(b0Plusb1, 0, n)
+                    new CompositeWire(a0Plusa1),
+                    new CompositeWire(b0Plusb1)
             );
             // Generate (1 + t^n)a0b0 circuit
-            Circuit onePlusTna0b0 = new ShiftAdder(2 * n - 1, n, new CompositeWire(a0b0, 0, 2 * n - 1));
+            Circuit onePlusTna0b0 = new ShiftAdder(2 * n - 1, n, new CompositeWire(a0b0));
             // Generate (1 + t^n)a1b1 circuit
-            Circuit onePlusTna1b1 = new ShiftAdder(2 * n - 1, n, new CompositeWire(a1b1, 0, 2 * n - 1));
+            Circuit onePlusTna1b1 = new ShiftAdder(2 * n - 1, n, new CompositeWire(a1b1));
             // Generate middle part of (1 + t^n)a0b0 + t^n(a0 + a1)(b0 + b1) circuit
             Circuit firstAddMiddlePart = new NormalAdder(2 * n - 1,
                     new CompositeWire(onePlusTna0b0, n, 2 * n - 1),
-                    new CompositeWire(a0Plusa1b0Plusb1, 0, 2 * n - 1)
+                    new CompositeWire(a0Plusa1b0Plusb1)
             );
 
             // Generate middle part of (1 + t^n)a0b0 + t^n(a0 + a1)(b0 + b1) + (t^n + t^2n)a1b1 circuit
             Circuit secondAddMiddlePart = new NormalAdder(2 * n - 1,
-                    new CompositeWire(firstAddMiddlePart, 0, 2 * n - 1),
+                    new CompositeWire(firstAddMiddlePart),
                     new CompositeWire(onePlusTna1b1, 0, 2 * n - 1));
 
             circuits = new ArrayList<>();

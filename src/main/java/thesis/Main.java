@@ -6,10 +6,11 @@ import thesis.circuit.Circuit;
 import thesis.circuit.IdentityCircuit;
 import thesis.circuit.XorCircuit;
 import thesis.circuit.karatsubamultiplier.KaratsubaMultiplier;
-import thesis.circuit.karatsubamultiplier.ShiftAdder;
+import thesis.poly.Polynomial;
 import thesis.wire.*;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,19 +20,15 @@ public class Main {
         //realKaratsubaTest();
         //fourBitsTest();
 
-        Circuit circuit = new ShiftAdder(3, 4);
+        Circuit circuit = new KaratsubaMultiplier(3);
 
-        setUpInput(circuit, List.of(Wire.ZERO, Wire.ONE, Wire.ONE));
-        List<Boolean> exp = List.of(Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE);
-        for (int i = 0; i < exp.size(); i++) {
-            System.out.println("Exp: " + exp.get(i) + ", Actual: " + circuit.evaluate(i));
-        }
-
-        setUpInput(circuit, List.of(Wire.ONE, Wire.ZERO, Wire.ZERO));
-        exp = List.of(Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
-        for (int i = 0; i < exp.size(); i++) {
-            System.out.println("Exp: " + exp.get(i) + ", Actual: " + circuit.evaluate(i));
-        }
+        List<Boolean> a = List.of(true, false, true);
+        List<Boolean> b = List.of(false, true, true);
+        setUpInputBools(circuit, a, b);
+        List<Boolean> res = IntStream.range(0, 5).mapToObj(circuit::evaluate).toList();
+        Polynomial exp = new Polynomial(a).mul(new Polynomial(b));
+        System.out.println("exp: " + exp);
+        System.out.println("actual: " + res);
 
         /*
         KaratsubaMultiplier mul = new KaratsubaMultiplier(4);
