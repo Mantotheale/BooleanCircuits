@@ -20,16 +20,9 @@ public class Main {
         //realKaratsubaTest();
         //fourBitsTest();
 
-        Circuit circuit = new KaratsubaMultiplier(3);
-
-        List<Boolean> a = List.of(true, false, true);
-        List<Boolean> b = List.of(false, true, true);
-        setUpInputBools(circuit, a, b);
-        List<Boolean> res = IntStream.range(0, 5).mapToObj(circuit::evaluate).toList();
-        Polynomial exp = new Polynomial(a).mul(new Polynomial(b));
-        System.out.println("exp: " + exp);
-        System.out.println("actual: " + res);
-
+        Circuit circuit = new KaratsubaMultiplier(1);
+        System.out.println("Expected gate count: " + 1);
+        //System.out.println("Actual gate count: " + circuit.gateCount());
         /*
         KaratsubaMultiplier mul = new KaratsubaMultiplier(4);
         setUpInput(mul,
