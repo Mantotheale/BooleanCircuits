@@ -1,55 +1,53 @@
 package thesis.circuit;
 
 import org.jetbrains.annotations.NotNull;
-import thesis.exceptions.InvalidInputSlotException;
-import thesis.exceptions.InvalidNumberOfInputsException;
-import thesis.exceptions.InvalidNumberOfOutputsExceptions;
-import thesis.exceptions.InvalidOutputSlotException;
-import thesis.wire.Pin;
-import thesis.wire.Wire;
+import thesis.signal.Bus;
+import thesis.signal.Pin;
+import thesis.signal.Signal;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public abstract class Circuit {
-    protected final @NotNull List<@NotNull Pin> inputPins;
-    private final int outputSlots;
+    protected final @NotNull List<@NotNull Pin> inputs;
 
-    public Circuit(int inputSlots, int outputSlots) {
-        if (inputSlots < 0)
-            throw new InvalidNumberOfInputsException(inputSlots);
-        if (outputSlots < 0)
-                throw new InvalidNumberOfOutputsExceptions(outputSlots);
-
-        inputPins = IntStream.range(0, inputSlots).mapToObj(_ -> new Pin()).toList();
-        this.outputSlots = outputSlots;
+    protected Circuit(int inputSlots) {
+        this.inputs = IntStream.range(0, inputSlots).mapToObj(_ -> new Pin()).toList();
     }
 
-    public final int inputSlots() {
-        return inputPins.size();
+    public final void setInput(int slot, @NotNull Signal signal) {
+        inputs.get(slot).set(signal);
     }
 
-    public final int outputSlots() {
-        return outputSlots;
+    public final void setInput(int offset, @NotNull Bus bus) {
+        int slot = offset;
+
+        for (Signal s: bus) {
+            setInput(slot, s);
+            slot++;
+        }
     }
 
-    public final void setInput(int inputSlot, @NotNull Wire input) {
-        if (inputSlot < 0 || inputSlot >= inputSlots())
-            throw new InvalidInputSlotException(this, inputSlot);
-
-        inputPins.get(inputSlot).setWire(input);
+    public final void setInput(@NotNull Bus bus) {
+        setInput(0, bus);
     }
 
-    public final void resetInput() {
-        inputPins.forEach(p -> p.setWire(Wire.ZERO));
+    public abstract @NotNull Bus outputBus();
+
+    public final @NotNull Signal output(int slot) {
+        return outputBus().getSignal(slot);
     }
 
-    public final @NotNull Boolean evaluate(int outputSlot) {
-        if (outputSlot < 0 || outputSlot >= outputSlots())
-            throw new InvalidOutputSlotException(this, outputSlot);
+    public final int gateCount() {
+        Set<Signal> visited = new HashSet<>();
 
-        return evaluateSlot(outputSlot);
+        int count = 0;
+        for (Signal o: outputBus()) {
+            count += o.gateCount(visited);
+        }
+
+        return count;
     }
-
-    public abstract @NotNull Boolean evaluateSlot(int outputSlot);
 }
