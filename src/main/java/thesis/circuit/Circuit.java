@@ -2,6 +2,7 @@ package thesis.circuit;
 
 import org.jetbrains.annotations.NotNull;
 import thesis.signal.Bus;
+import thesis.signal.CachedPin;
 import thesis.signal.Pin;
 import thesis.signal.Signal;
 
@@ -14,7 +15,8 @@ public abstract class Circuit {
     protected final @NotNull List<@NotNull Pin> inputs;
 
     protected Circuit(int inputSlots) {
-        this.inputs = IntStream.range(0, inputSlots).mapToObj(_ -> new Pin()).toList();
+        //this.inputs = IntStream.range(0, inputSlots).mapToObj(_ -> new Pin()).toList();
+        this.inputs = IntStream.range(0, inputSlots).mapToObj(_ -> (Pin) new CachedPin()).toList();
     }
 
     public final void setInput(int slot, @NotNull Signal signal) {
@@ -49,5 +51,10 @@ public abstract class Circuit {
         }
 
         return count;
+    }
+
+    public final void reset() {
+        for (Signal s: outputBus())
+            s.reset();
     }
 }

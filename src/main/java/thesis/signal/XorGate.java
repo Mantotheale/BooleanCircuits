@@ -44,6 +44,12 @@ public class XorGate implements Signal {
     }
 
     @Override
+    public void reset() {
+        a.reset();
+        b.reset();
+    }
+
+    @Override
     public String toString() {
         return formattedToString(0);
     }

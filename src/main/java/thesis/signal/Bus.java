@@ -44,4 +44,9 @@ public class Bus implements Iterable<Signal> {
     public @NotNull Stream<Signal> stream() {
         return signals.stream();
     }
+
+    @Override
+    public String toString() {
+        return signals.toString();
+    }
 }

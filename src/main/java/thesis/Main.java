@@ -7,6 +7,7 @@ import thesis.signal.Bus;
 import thesis.signal.ConstantSignal;
 import thesis.signal.Signal;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
 
@@ -28,7 +29,7 @@ public class Main {
         System.out.println("Gate count: " + shiftAdder.gateCount());
 
         System.out.println("KARATSUBA 1bit");
-        Karatsuba karatsuba1bit = new Karatsuba(
+        SchoolBook karatsuba1bit = new SchoolBook(
                 new Bus(ConstantSignal.TRUE), // 1
                 new Bus(ConstantSignal.FALSE) // 0
         );
@@ -36,7 +37,7 @@ public class Main {
         System.out.println("Gate count: " + karatsuba1bit.gateCount());
 
         System.out.println("KARATSUBA 2bit");
-        Karatsuba karatsuba2bit = new Karatsuba(
+        SchoolBook karatsuba2bit = new SchoolBook(
                 new Bus(ConstantSignal.TRUE, ConstantSignal.FALSE), // 1
                 new Bus(ConstantSignal.FALSE, ConstantSignal.TRUE) // x
         );
@@ -44,7 +45,7 @@ public class Main {
         System.out.println("Gate count: " + karatsuba2bit.gateCount());
 
         System.out.println("KARATSUBA3bit");
-        Karatsuba karatsuba3bit = new Karatsuba(
+        SchoolBook karatsuba3bit = new SchoolBook(
                 new Bus(ConstantSignal.TRUE, ConstantSignal.FALSE, ConstantSignal.TRUE), // 1 + x^2
                 new Bus(ConstantSignal.FALSE, ConstantSignal.FALSE, ConstantSignal.TRUE) // x^2
         );
@@ -52,55 +53,47 @@ public class Main {
         System.out.println("Gate count: " + karatsuba3bit.gateCount());
 
         System.out.println("KARATSUBA 4bit");
-        Karatsuba karatsuba4bit = new Karatsuba(
+        SchoolBook karatsuba4bit = new SchoolBook(
                 new Bus(ConstantSignal.TRUE, ConstantSignal.FALSE, ConstantSignal.TRUE, ConstantSignal.FALSE), // 1 + x^2
                 new Bus(ConstantSignal.FALSE, ConstantSignal.FALSE, ConstantSignal.TRUE, ConstantSignal.TRUE) // x^2 + x^3
         );
         System.out.println(karatsuba4bit.outputBus().stream().map(Signal::evaluate).toList()); // x^2 + x^3 + x^4 + x^5
         System.out.println("Gate count: " + karatsuba4bit.gateCount());
 
-        System.out.println(0);
         Random r = new Random();
-        for (int bits = 1; bits <= 16; bits *= 2) {
-            for (int i = 0; i < 10_000; i++) {
-                List<Boolean> a = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
-                List<Boolean> b = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
+        List<Boolean> a = padList(IntToBinaryList.convert(new BigInteger(100, r)), 100);
+        List<Boolean> b = padList(IntToBinaryList.convert(new BigInteger(100, r)), 100);
+        // Schoolbook = 19801
+        // Karatsuba = 13575
 
-                Karatsuba circuit = new Karatsuba(
-                        new Bus(a.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE)),
-                        new Bus(b.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE))
-                );
-                List<Boolean> res = circuit.outputBus().stream().map(Signal::evaluate).toList();
+        SchoolBook circuit = new SchoolBook(
+                new Bus(a.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE)),
+                new Bus(b.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE))
+        );
 
-                Polynomial circRes = new Polynomial(res);
-                Polynomial exp = new Polynomial(a).mul(new Polynomial(b));
-                if (!circRes.equals(exp)) {
-                    throw new RuntimeException("ERRORE circuito");
-                }
-            }
+        long start = System.currentTimeMillis();
+        List<Boolean> res = circuit.outputBus().stream().map(Signal::evaluate).toList();
+        Polynomial circRes = new Polynomial(res);
+        Polynomial exp = new Polynomial(a).mul(new Polynomial(b));
+        if (!circRes.equals(exp)) {
+            throw new RuntimeException("ERRORE circuito");
         }
 
-        System.out.println(1);
-        for (int bits = 5; bits <= 15; bits += 2) {
-            for (int i = 0; i < 10_000; i++) {
-                List<Boolean> a = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
-                List<Boolean> b = padList(IntToBinaryList.convert(r.nextInt((int) Math.pow(2, bits))), bits);
+        long middle = System.currentTimeMillis();
 
-                Karatsuba circuit = new Karatsuba(
-                        new Bus(a.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE)),
-                        new Bus(b.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE))
-                );
-                List<Boolean> res = circuit.outputBus().stream().map(Signal::evaluate).toList();
-
-                Polynomial circRes = new Polynomial(res);
-                Polynomial exp = new Polynomial(a).mul(new Polynomial(b));
-                if (!circRes.equals(exp)) {
-                    throw new RuntimeException("ERRORE circuito");
-                }
-            }
+        res = circuit.outputBus().stream().map(Signal::evaluate).toList();
+        circRes = new Polynomial(res);
+        if (!circRes.equals(exp)) {
+            throw new RuntimeException("ERRORE circuito");
         }
 
-        System.out.println(2);
+        long end = System.currentTimeMillis();
+
+        System.out.println("Gates: " + circuit.gateCount());
+        System.out.println("Tempo 1: " + (middle - start));
+        System.out.println("Tempo 2: " + (end - middle));
+        System.out.println("Tot: " + (end - start));
+        // Normale: 13905
     }
 
     private static @NotNull List<@NotNull Boolean> padList(@NotNull List<@NotNull Boolean> l, int len) {

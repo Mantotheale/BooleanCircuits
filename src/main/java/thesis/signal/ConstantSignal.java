@@ -29,6 +29,9 @@ public class ConstantSignal implements Signal {
                 .toString();
     }
 
+    @Override
+    public void reset() { }
+
     @NotNull public static Signal TRUE = new ConstantSignal(true);
 
     @NotNull public static Signal FALSE = new ConstantSignal(false);

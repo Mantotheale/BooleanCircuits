@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 public class Pin implements Signal {
-    private Signal signal = ConstantSignal.FALSE;
+    private @NotNull Signal signal = ConstantSignal.FALSE;
 
     public void set(Signal signal) {
         this.signal = signal;
@@ -24,5 +24,10 @@ public class Pin implements Signal {
     @Override
     public @NotNull String formattedToString(int level) {
         return signal.formattedToString(level);
+    }
+
+    @Override
+    public void reset() {
+        signal.reset();
     }
 }
