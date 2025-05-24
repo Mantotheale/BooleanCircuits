@@ -29,7 +29,7 @@ public class Main {
         System.out.println("Gate count: " + shiftAdder.gateCount());
 
         System.out.println("KARATSUBA 1bit");
-        SchoolBook karatsuba1bit = new SchoolBook(
+        KaratsubaRefined karatsuba1bit = new KaratsubaRefined(
                 new Bus(ConstantSignal.TRUE), // 1
                 new Bus(ConstantSignal.FALSE) // 0
         );
@@ -37,7 +37,7 @@ public class Main {
         System.out.println("Gate count: " + karatsuba1bit.gateCount());
 
         System.out.println("KARATSUBA 2bit");
-        SchoolBook karatsuba2bit = new SchoolBook(
+        KaratsubaRefined karatsuba2bit = new KaratsubaRefined(
                 new Bus(ConstantSignal.TRUE, ConstantSignal.FALSE), // 1
                 new Bus(ConstantSignal.FALSE, ConstantSignal.TRUE) // x
         );
@@ -45,7 +45,7 @@ public class Main {
         System.out.println("Gate count: " + karatsuba2bit.gateCount());
 
         System.out.println("KARATSUBA3bit");
-        SchoolBook karatsuba3bit = new SchoolBook(
+        KaratsubaRefined karatsuba3bit = new KaratsubaRefined(
                 new Bus(ConstantSignal.TRUE, ConstantSignal.FALSE, ConstantSignal.TRUE), // 1 + x^2
                 new Bus(ConstantSignal.FALSE, ConstantSignal.FALSE, ConstantSignal.TRUE) // x^2
         );
@@ -53,7 +53,7 @@ public class Main {
         System.out.println("Gate count: " + karatsuba3bit.gateCount());
 
         System.out.println("KARATSUBA 4bit");
-        SchoolBook karatsuba4bit = new SchoolBook(
+        KaratsubaRefined karatsuba4bit = new KaratsubaRefined(
                 new Bus(ConstantSignal.TRUE, ConstantSignal.FALSE, ConstantSignal.TRUE, ConstantSignal.FALSE), // 1 + x^2
                 new Bus(ConstantSignal.FALSE, ConstantSignal.FALSE, ConstantSignal.TRUE, ConstantSignal.TRUE) // x^2 + x^3
         );
@@ -65,8 +65,9 @@ public class Main {
         List<Boolean> b = padList(IntToBinaryList.convert(new BigInteger(100, r)), 100);
         // Schoolbook = 19801
         // Karatsuba = 13575
+        // Karatsuba refined = 12698
 
-        SchoolBook circuit = new SchoolBook(
+        KaratsubaRefined circuit = new KaratsubaRefined(
                 new Bus(a.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE)),
                 new Bus(b.stream().map(x -> x ? ConstantSignal.TRUE : ConstantSignal.FALSE))
         );

@@ -36,6 +36,10 @@ public class Bus implements Iterable<Signal> {
         return new Bus(signals.subList(offset, offset + size));
     }
 
+    public @NotNull Bus concat(@NotNull Bus other) {
+        return new Bus(Stream.concat(this.stream(), other.stream()));
+    }
+
     @Override
     public @NotNull Iterator<Signal> iterator() {
         return signals.iterator();
